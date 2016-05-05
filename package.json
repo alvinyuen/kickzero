@@ -1,0 +1,16 @@
+{
+  "name": "kickzero",
+  "version": "1.0.0",
+  "description": "",
+  "main": "deploy/index.html",
+  "author": "alvin yuen, heyward dai",
+  "scripts": {
+  },
+  "devDependencies": {
+      "grunt-open": "~0.2.3",
+      "grunt": "~0.4.2",
+      "grunt-contrib-concat": "~0.3.0",
+      "grunt-contrib-watch": "~0.5.3",
+      "grunt-contrib-connect": "~0.6.0"
+  }
+}
