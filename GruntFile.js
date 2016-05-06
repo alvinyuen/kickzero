@@ -9,6 +9,7 @@ module.exports = function (grunt) {
         connect: {
             server: {
                 options: {
+                    hostname:'*',
                     port: 8082,
                     base: './deploy'
                 }

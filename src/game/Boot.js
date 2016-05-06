@@ -14,6 +14,7 @@ KickZero.Boot.prototype = {
     },
     preload: function(){
         this.game.load.image('default-background','assets/backgrounds/full-background.png');
+        this.game.load.image('ball', 'assets/sprites/ball.png');
         this.game.load.spritesheet('megaman','assets/sprites/megaman.png', 160, 160, 3);
 
     },
