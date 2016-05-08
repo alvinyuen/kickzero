@@ -28,25 +28,22 @@ this.collideUp=c,this.collideDown=d,this.faceLeft=a,this.faceRight=b,this.faceTo
 /**
  * Created by alvin on 2016/5/6.
  */
+
+// Not sure if this line is needed. Creates new KickZero variable if it doesn't already exist...
 KickZero = {};
 
-KickZero.Boot = function(game){
-    //add all game states
-    game.state.add('Menu', KickZero.Menu);
-};
+KickZero.Boot = function(game){};
 
 KickZero.Boot.prototype = {
-    init: function(){
 
-    },
     preload: function(){
-        this.game.load.image('default-background','assets/backgrounds/full-background.png');
-        this.game.load.image('ball', 'assets/sprites/ball.png');
-        this.game.load.spritesheet('megaman','assets/sprites/megaman.png', 160, 160, 3);
-
+        // Only load assets for preload screen
+        this.game.load.image('preloadbar', 'assets/images/preloader-bar.png');
     },
     create: function(){
-        this.state.start('Menu');
+
+
+        this.state.start('Preload');
     },
     update: function(){
 
@@ -56,47 +53,17 @@ KickZero.Boot.prototype = {
 /**
  * Created by alvin on 2016/5/6.
  */
+
 KickZero.Menu = function(game){
 
 };
+
 KickZero.Menu.prototype = {
 
-    init: function(){
-    },
-    preload: function(){
-        var style={
-            font: "13px Arial",
-            fill: "#ffffff",
-            align:"center"
-        };
-
-        this.background = this.game.add.tileSprite(0,0, 3712,1536, 'default-background');
-        this.resize();
-        var box = this.make.graphics(0,0);
-        box.lineStyle(8,7322079,0.8);
-        box.beginFill(7322079,1);
-        box.drawRect(0, 0, 90,90);
-        box.endFill();
-        this.spinner = this.add.sprite(this.world.centerX, this.world.centerY, box.generateTexture());
-        this.spinner.anchor.set(0.5);
-        //this.load.setPreloadSprite(this.spinner);
-        this.text = this.add.text(340,185, "Loading: 0%", style);
-        //simulating page load
-        for(var i=0;i<100;i++){
-            this.load.image('full-background'+i, 'assets/backgrounds/full-background.png?rnd='+i);
-        }
-        this.load.onFileComplete.add(this.fileLoaded, this);
-    },
-    fileLoaded: function(progress){
-      this.text.text = "Loading: "+progress+"%";
-    },
-    loadUpdate: function(){
-
-    },
     create: function(){
         this.megaman = this.add.sprite(100, 200, 'megaman');
         this.megaman.animations.add('walk');
-        this.megaman.play('walk',15, true);
+        this.megaman.play('walk',10, true);
         this.ball = this.add.sprite(260, 330, 'ball');
         this.ball.anchor.setTo(0.5,0.5);
 
@@ -118,4 +85,45 @@ KickZero.Menu.prototype = {
         this.background.scale.y=0.25;
         this.background.scale.x=0.25;
     }
+};
+/**
+ * Created by heyward on 2016/5/8.
+ */
+
+KickZero.Preload = function(game){};
+
+KickZero.Preload.prototype = {
+
+    preload: function(){
+        var style={
+            font: "13px Arial",
+            fill: "#ffffff",
+            align:"center"
+        };
+
+        this.background = this.game.add.tileSprite(0,0, 3712,1536, 'default-background');
+        this.resize();
+        var box = this.make.graphics(0,0);
+        box.lineStyle(8,7322079,0.8);
+        box.beginFill(7322079,1);
+        box.drawRect(0, 0, 90,90);
+        box.endFill();
+        this.spinner = this.add.sprite(this.world.centerX, this.world.centerY, box.generateTexture());
+        this.spinner.anchor.set(0.5);
+        //this.load.setPreloadSprite(this.spinner);
+        this.text = this.add.text(340,185, "Loading: 0%", style);
+        this.load.image('default-background','assets/backgrounds/full-background.png');
+        this.load.image('ball', 'assets/sprites/ball.png');
+        this.load.spritesheet('megaman','assets/sprites/megaman.png', 160, 160, 3);
+        this.load.onFileComplete.add(this.fileLoaded, this);
+    },
+    fileLoaded: function(progress){
+      this.text.text = "Loading: "+progress+"%";
+    },
+    loadUpdate: function(){
+
+    },
+    create: function(){
+        this.state.start('Menu');
+    },
 };

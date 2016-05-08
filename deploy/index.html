@@ -4,6 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <title>Kick Zero</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="css/game.css" type="text/css" />
     <script src="js/kickzero-v1.0.0.js"></script>
 </head>
@@ -12,9 +15,10 @@
 </body>
 <script type="text/javascript">
     (function(){
-        var game = new Phaser.Game(768,384, Phaser.AUTO, 'game');
-        game.state.add('Boot', KickZero.Boot);
-        game.state.start('Boot');
+        var KickZero = new Phaser.Game(768,384, Phaser.AUTO, 'game');
+        KickZero.state.add('Boot', KickZero.Boot);
+
+        KickZero.state.start('Boot');
     })();
 
 </script>

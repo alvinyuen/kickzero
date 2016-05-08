@@ -1,25 +1,22 @@
 /**
  * Created by alvin on 2016/5/6.
  */
+
+// Not sure if this line is needed. Creates new KickZero variable if it doesn't already exist...
 KickZero = {};
 
-KickZero.Boot = function(game){
-    //add all game states
-    game.state.add('Menu', KickZero.Menu);
-};
+KickZero.Boot = function(game){};
 
 KickZero.Boot.prototype = {
-    init: function(){
 
-    },
     preload: function(){
-        this.game.load.image('default-background','assets/backgrounds/full-background.png');
-        this.game.load.image('ball', 'assets/sprites/ball.png');
-        this.game.load.spritesheet('megaman','assets/sprites/megaman.png', 160, 160, 3);
-
+        // Only load assets for preload screen
+        this.game.load.image('preloadbar', 'assets/images/preloader-bar.png');
     },
     create: function(){
-        this.state.start('Menu');
+
+
+        this.state.start('Preload');
     },
     update: function(){
 
