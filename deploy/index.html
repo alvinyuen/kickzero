@@ -15,10 +15,13 @@
 </body>
 <script type="text/javascript">
     (function(){
-        var KickZero = new Phaser.Game(768,384, Phaser.AUTO, 'game');
-        KickZero.state.add('Boot', KickZero.Boot);
+        var game = new Phaser.Game(768,384, Phaser.AUTO, 'game');
+        game.state.add('Boot', KickZero.Boot);
+        game.state.add('Preload', KickZero.Preload);
+        game.state.add('Menu', KickZero.Menu);
+        game.state.add('Game', KickZero.Game);
 
-        KickZero.state.start('Boot');
+        game.state.start('Boot');
     })();
 
 </script>

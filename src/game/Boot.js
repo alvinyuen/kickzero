@@ -13,13 +13,22 @@ KickZero.Boot.prototype = {
         // Only load assets for preload screen
         this.game.load.image('preloadbar', 'assets/images/preloader-bar.png');
     },
+    
     create: function(){
 
+    	// loading screen will have a black background
+    	this.game.stage.backgroundColor = '#000000';
+
+    	// scaling options
+    	this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+
+    	// have the game centered
+    	this.scale.pageAlignHorizontally = true;
+    	this.scale.pageALignVertically = true;
+
+    	this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
         this.state.start('Preload');
     },
-    update: function(){
-
-    }
 
 };
