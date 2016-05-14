@@ -3,7 +3,7 @@
  */
 
 KickZero.Menu = function(game){
-
+    this.FLOOR_HEIGHT = 50;
 };
 
 KickZero.Menu.prototype = {
@@ -13,10 +13,15 @@ KickZero.Menu.prototype = {
         this.background = this.game.add.tileSprite(0,0, 3712,1536, 'default-background');
         this.resize();
 
-        this.megaman = this.add.sprite(100, 200, 'megaman');
+        this.megaman = this.add.sprite(100, 0, 'megaman');
+        var megamanYOffset = this.world.height - this.megaman.height - this.FLOOR_HEIGHT;
+        this.megaman.position.y = megamanYOffset;
         this.megaman.animations.add('walk');
         this.megaman.play('walk', 10, true);
-        this.ball = this.add.sprite(260, 330, 'ball');
+
+        this.ball = this.add.sprite(260, 0, 'ball');
+        var ballYOffset = this.world.height - (0.5 * this.ball.height) - this.FLOOR_HEIGHT;
+        this.ball.position.y = ballYOffset;
         this.ball.anchor.setTo(0.5 , 0.5);
 
         var titleStyle = {font: "bold 32px Arial", fill:"#123456"/*, boundsAlignH: "center", boundsAlignV:"middle"*/};
@@ -26,8 +31,10 @@ KickZero.Menu.prototype = {
         title.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 2);
 
         var startButtonTextStyle = { font: "30px Arial", fill: "#fff", align: "center" }
-        startButton = this.add.button(this.game.world.width - 300, this.game.world.height - 100, 'button', this.startGame, this, 0, 0, 1, 0);
-        
+        startButton = this.add.button(this.game.world.width - 300, 0, 'button', this.startGame, this, 0, 0, 1, 0);
+        var startButtonYOffset = this.world.height - startButton.height - this.FLOOR_HEIGHT;
+        startButton.position.y = startButtonYOffset
+
         var startButtonText = this.add.text(0, 0, "Click to Start", startButtonTextStyle);
         startButtonText.anchor.set(0.5);
         startButtonText.position.setTo(startButton.width/2, startButton.height/2)

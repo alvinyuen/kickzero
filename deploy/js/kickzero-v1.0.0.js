@@ -68,6 +68,7 @@ KickZero.Game.prototype = {
         
         this.ENEMY_VELOCITY_MAX_VARIANCE = 50;
         this.ENEMY_VELOCITY_BASE = 100;
+        this.FLOOR_HEIGHT = 50;
     },
 
     create: function(){
@@ -75,11 +76,19 @@ KickZero.Game.prototype = {
         this.background = this.game.add.tileSprite(0,0, 3712,1536, 'default-background');
         this.resize();
 
-        this.player = this.add.sprite(100, 200, 'megaman');
+        this.player = this.add.sprite(100, 0, 'megaman');
+        var playerYOffset = this.world.height - this.player.height - this.FLOOR_HEIGHT;
+        this.player.position.y = playerYOffset;
         this.player.animations.add('walk');
         this.player.play('walk', 10, true);
-        this.ball = this.add.sprite(260, 330, 'ball');
+
+        this.ball = this.add.sprite(260, 0, 'ball');
+        var ballYOffset = this.world.height - this.ball.height/2.0 - this.FLOOR_HEIGHT;
+        this.ball.position.y = ballYOffset;
         this.ball.anchor.setTo(0.5 , 0.5);
+        this.physics.arcade.enable(this.ball);
+        this.ball.enableBody = true;
+        this.ball.physicsBodyType = Phaser.Physics.ARCADE;
 
         this.setupEnemies();
 
@@ -92,7 +101,7 @@ KickZero.Game.prototype = {
         this.ball.angle +=10;
 
         // i assume 60fps, spawn enemy every 3 seconds
-        if (this.gameTick % 120 == 0) {
+        if (this.gameTick % 180 == 0) {
             console.log('spawning enemy');
             this.spawnEnemies();
         }
@@ -100,7 +109,7 @@ KickZero.Game.prototype = {
         this.checkCollisions();
 
         this.gameTick++;
-        console.log('game tick is ' + this.gameTick);
+        //console.log('game tick is ' + this.gameTick);
     
     },
 
@@ -111,15 +120,18 @@ KickZero.Game.prototype = {
 
     setupEnemies: function() {
         // Setup sprite group for enemies
-        enemies = this.add.group();
-        enemies.enableBody = true
-        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        this.enemies = this.add.group();
+        this.physics.arcade.enable(this.enemies);
+        this.enemies.enableBody = true;
+        this.enemies.physicsBodyType = Phaser.Physics.ARCADE;
     },
 
     spawnEnemies: function() {
         // I am not sure when enemy will be released. this might be a memory leak?
-        var enemy = enemies.create(this.world.width, this.world.height - 100, 'enemy');
+        var enemy = this.enemies.create(this.world.width, 0, 'enemy');
         enemy.scale.setTo(2, 2);
+        var enemyYOffset = this.world.height - enemy.height - this.FLOOR_HEIGHT;
+        enemy.position.y = enemyYOffset;
         enemy.body.velocity.x = - ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
         enemy.health = 3;
         enemy.animations.add('walk');
@@ -129,10 +141,16 @@ KickZero.Game.prototype = {
 
     checkCollisions: function() {
         // check if ball hit enemy
+        this.physics.arcade.overlap(this.ball, this.enemies, this.enemyHit, null, this);
 
         // check if enemy hit player
     },
     
+    enemyHit: function(ball, enemy) {
+        console.log('enemy hit');
+
+        enemy.kill()
+    },
 
     kick: function(){
 
@@ -143,7 +161,7 @@ KickZero.Game.prototype = {
  */
 
 KickZero.Menu = function(game){
-
+    this.FLOOR_HEIGHT = 50;
 };
 
 KickZero.Menu.prototype = {
@@ -153,10 +171,15 @@ KickZero.Menu.prototype = {
         this.background = this.game.add.tileSprite(0,0, 3712,1536, 'default-background');
         this.resize();
 
-        this.megaman = this.add.sprite(100, 200, 'megaman');
+        this.megaman = this.add.sprite(100, 0, 'megaman');
+        var megamanYOffset = this.world.height - this.megaman.height - this.FLOOR_HEIGHT;
+        this.megaman.position.y = megamanYOffset;
         this.megaman.animations.add('walk');
         this.megaman.play('walk', 10, true);
-        this.ball = this.add.sprite(260, 330, 'ball');
+
+        this.ball = this.add.sprite(260, 0, 'ball');
+        var ballYOffset = this.world.height - (0.5 * this.ball.height) - this.FLOOR_HEIGHT;
+        this.ball.position.y = ballYOffset;
         this.ball.anchor.setTo(0.5 , 0.5);
 
         var titleStyle = {font: "bold 32px Arial", fill:"#123456"/*, boundsAlignH: "center", boundsAlignV:"middle"*/};
@@ -166,8 +189,10 @@ KickZero.Menu.prototype = {
         title.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 2);
 
         var startButtonTextStyle = { font: "30px Arial", fill: "#fff", align: "center" }
-        startButton = this.add.button(this.game.world.width - 300, this.game.world.height - 100, 'button', this.startGame, this, 0, 0, 1, 0);
-        
+        startButton = this.add.button(this.game.world.width - 300, 0, 'button', this.startGame, this, 0, 0, 1, 0);
+        var startButtonYOffset = this.world.height - startButton.height - this.FLOOR_HEIGHT;
+        startButton.position.y = startButtonYOffset
+
         var startButtonText = this.add.text(0, 0, "Click to Start", startButtonTextStyle);
         startButtonText.anchor.set(0.5);
         startButtonText.position.setTo(startButton.width/2, startButton.height/2)
