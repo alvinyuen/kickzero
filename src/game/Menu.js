@@ -4,6 +4,8 @@
 
 KickZero.Menu = function(game){
     this.FLOOR_HEIGHT = 50;
+    this.BALL_INITIAL_XOFFSET = 400;
+    this.PLAYER_XOFFSET = 50;
 };
 
 KickZero.Menu.prototype = {
@@ -13,13 +15,13 @@ KickZero.Menu.prototype = {
         this.background = this.game.add.tileSprite(0,0, 3712,1536, 'default-background');
         this.resize();
 
-        this.megaman = this.add.sprite(100, 0, 'megaman');
+        this.megaman = this.add.sprite(this.PLAYER_XOFFSET, 0, 'megaman');
         var megamanYOffset = this.world.height - this.megaman.height - this.FLOOR_HEIGHT;
         this.megaman.position.y = megamanYOffset;
         this.megaman.animations.add('walk');
         this.megaman.play('walk', 10, true);
 
-        this.ball = this.add.sprite(260, 0, 'ball');
+        this.ball = this.add.sprite(this.BALL_INITIAL_XOFFSET, 0, 'ball');
         var ballYOffset = this.world.height - (0.5 * this.ball.height) - this.FLOOR_HEIGHT;
         this.ball.position.y = ballYOffset;
         this.ball.anchor.setTo(0.5 , 0.5);

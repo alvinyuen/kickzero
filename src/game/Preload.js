@@ -36,6 +36,7 @@ KickZero.Preload.prototype = {
 
         this.load.image('default-background','assets/backgrounds/full-background.png');
         this.load.image('ball', 'assets/sprites/ball.png');
+        this.load.image('crosshair', 'assets/images/crosshair.png');
         this.load.spritesheet('megaman','assets/sprites/megaman.png', 160, 160, 3);
         this.load.spritesheet('button', 'assets/images/button.png', 256, 80, 3);
         this.load.spritesheet('enemy', 'assets/sprites/enemy.png', 29.25, 36, 8);
