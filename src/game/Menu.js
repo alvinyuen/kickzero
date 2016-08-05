@@ -4,7 +4,7 @@
 
 KickZero.Menu = function(game){
     this.FLOOR_HEIGHT = 50;
-    this.BALL_INITIAL_XOFFSET = 400;
+    this.BALL_INITIAL_XOFFSET = 200;
     this.PLAYER_XOFFSET = 50;
 };
 
@@ -45,7 +45,7 @@ KickZero.Menu.prototype = {
 
     update: function(){
         this.background.tilePosition.x -=5;
-        this.ball.angle +=10;
+        this.ball.angle +=20;
     },
 
     resize: function(){
