@@ -29,7 +29,8 @@ KickZero.Preload.prototype = {
         this.load.spritesheet('megaman','assets/sprites/megaman.png', 160, 160, 3);
         this.load.spritesheet('button', 'assets/images/button.png', 256, 80, 3);
         this.load.spritesheet('enemy', 'assets/sprites/enemy.png', 29.25, 36, 8);
-        this.load.spritesheet('explosion','assets/sprites/explosion.png', 64, 64, 25)
+        this.load.spritesheet('explosion','assets/sprites/explosion.png', 64, 64, 25);
+        this.load.spritesheet('boss', 'assets/sprites/boss.png', 136.95, 112, 20);
         //simulating page load
         for(var i=0;i<100;i++){
             this.load.image('full-background'+i, 'assets/backgrounds/full-background.png?rnd='+i);

@@ -86,10 +86,12 @@ KickZero.Game.prototype = {
         this.BALL_SCALE = 0.5;
         this.CROSSHAIR_SCALE = 2;
         this.ENEMY_SCALE = 1;
+        this.BOSS_SCALE = 1;
         
         //game settings
         this.GRAVITY = 500;  //pixels/second/second
         this.NUMBER_OF_ENEMIES = 3;
+        this.BOSS_SPAWN_KILL = 5; // number of enemies killed before boss spawns
     },
 
     create: function(){
@@ -98,6 +100,7 @@ KickZero.Game.prototype = {
         this.setupPlayer();
         this.setupBall();
         this.setupCrossHair();
+        this.setupBosses();
         this.setupEnemies();
         this.setupExplosion();
         //add mouseclick
@@ -113,6 +116,10 @@ KickZero.Game.prototype = {
         this.score = 0;
         this.scoreText = this.add.text(this.game.world.centerX,50, 'Score: 0',{font:'bold 18px Arial', fill:'#123456'});
         this.scoreText.anchor.setTo(0.5,0.5);
+
+        //set initial enemy kill counter && boss kill counter
+        this.enemyCounter = 0;
+        this.bossDead = true;
     },
 
     
@@ -124,12 +131,40 @@ KickZero.Game.prototype = {
         // animation was weird when ball velocity reached 0 so making it spin constantly
         // this.ball.angle += (this.ball.body.velocity.x / 5);
         this.ball.angle +=30;
+
         // spawn enemies
         // i assume 60fps, spawn enemy every 3 seconds <-- changed so spawns randomly every 1,2 or 3 seconds
-        if (this.gameTick % (1/(Math.floor((Math.random()*3)+1))*180) == 0) {
-            console.log('spawning enemy');
-            this.spawnEnemies();
+        // changed boss spawn according to enemy spawns - boss spawns only after certain number of enemies spawn else keep spawning enemies
+        if ((this.gameTick % (1/(Math.floor((Math.random()*3)+1))*180) == 0)) {
+
+            //use bossDead state to control whether to continue enemy spawns
+            if(this.bosses.countDead()===1 &&  (this.enemyCounter % this.BOSS_SPAWN_KILL !=0 || this.enemyCounter===0 || this.bossDead)) {
+                this.bossDead = false;
+                console.log('spawning enemy');
+                this.spawnEnemies();
+            }
+            else if(this.bosses.countDead()===1 && this.enemies.countDead()===this.NUMBER_OF_ENEMIES){
+                   this.spawnBoss();
+                   //bossDead state change to true when boss dies
+                }
         }
+
+        //mimic boss forward and backward movement
+        if(this.bosses.getFirstAlive()!=null|| this.bosses.getFirstAlive()!=undefined){
+            var boss = this.bosses.getFirstAlive();
+            if(boss.position.x < (this.world.width*(2/3))){
+                boss.body.velocity.x =  ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
+            }
+            else if(boss.position.x > this.world.width - 50){
+                boss.body.velocity.x = - ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
+            }
+        }
+
+
+
+
+
+
         //collision check
         this.checkCollisions();
         // return ball to player when ball stops
@@ -228,6 +263,22 @@ KickZero.Game.prototype = {
         }
     },
 
+    setupBosses: function(){
+        //setup boss
+        this.bosses = this.add.group();
+        var boss = this.game.add.sprite(this.world.width, 0, 'boss');
+        boss.anchor.setTo(0.5, 0.5);
+        this.bosses.add(boss);
+        this.physics.arcade.enable(this.bosses);
+        this.bosses.enableBody = true;
+        this.bosses.physicsBodyType = Phaser.Physics.ARCADE;
+        //set initial state to dead
+        boss.kill();
+
+        // This event listener must be added after boss is initially killed
+        boss.events.onKilled.add(this.bossKilled, this);
+    },
+
     
     
     setupExplosion: function(){
@@ -253,10 +304,34 @@ KickZero.Game.prototype = {
         var enemyYOffset = this.world.height - enemy.height/2.0 - this.FLOOR_HEIGHT;
         enemy.position.y = enemyYOffset;
         enemy.body.velocity.x = - ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
-        enemy.health = 3;
+        enemy.health = 9;
         enemy.animations.add('walk');
         enemy.play('walk', 10, true);
         // Need to add hp bar to enemy
+
+        //add spawn counter
+        this.enemyCounter++;
+    },
+
+    spawnBoss: function(){
+
+        //retrieve boss from pool
+        var boss = this.bosses.getFirstDead();
+
+        if(boss===null || boss===undefined) return;
+
+        //revive boss
+        boss.revive();
+
+        boss.scale.setTo(this.BOSS_SCALE, this.BOSS_SCALE);
+        boss.position.x = this.world.width;
+        var bossYOffset = this.world.height - boss.height/2.0 - this.FLOOR_HEIGHT;
+        boss.position.y = bossYOffset;
+        boss.body.velocity.x = - ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
+        boss.health = 15;
+        boss.animations.add('walk');
+        boss.play('walk',10, true);
+        //TODO need to add hp bar to boss
     },
 
     
@@ -265,10 +340,14 @@ KickZero.Game.prototype = {
         // sprites and ground collision
         this.physics.arcade.collide(this.player, this.ground);
         this.physics.arcade.collide(this.ball, this.ground);
+        this.physics.arcade.collide(this.bosses, this.ground);
         this.physics.arcade.collide(this.enemies, this.ground);
         
         // check if ball hit enemy
         this.physics.arcade.overlap(this.ball, this.enemies, this.ballHitEnemy, null, this);
+
+        //check if ball hit boss
+        this.physics.arcade.overlap(this.ball, this.bosses, this.ballHitBoss, null, this);
         
         // check if ball hit player
         // not working since sprite dimensions not correct
@@ -285,6 +364,7 @@ KickZero.Game.prototype = {
         }
         // check if enemy hit player <-- should never happen?
         this.physics.arcade.overlap(this.enemies, this.player, this.enemyHitPlayer, null, this);
+        this.physics.arcade.overlap(this.bosses, this.player, this.enemyHitPlayer, null, this);
     },
 
     
@@ -305,13 +385,10 @@ KickZero.Game.prototype = {
     
     ballHitEnemy: function(ball, enemy) {
         console.log('ball hit enemy');
-        //ball physics
-        this.ball.body.drag.setTo(0,0);
-        //Math.atan2(velocity y, velocity x) to calculate angle
-        this.ball.rotation = Math.atan2(-100, -100);
-        //make this vary to increase game difficulty
-        this.ball.body.velocity.x = Math.cos(this.ball.rotation) * ((Math.random()*2)+1)* this.BALL_REPEL_VELOCITY;
-        this.ball.body.velocity.y = Math.sin(this.ball.rotation) * this.BALL_REPEL_VELOCITY;
+
+        //ball bounce physics
+        this.bounceBall();
+
         //play explosion
         this.explode(enemy.position.x, enemy.position.y);
         //kill enemy
@@ -320,6 +397,46 @@ KickZero.Game.prototype = {
         this.score+=20;
         //update score
         this.updateScore();
+
+
+    },
+
+    ballHitBoss: function(ball, boss){
+        console.log('ball hit boss');
+
+        //bounce ball
+        this.bounceBall();
+
+        //boss will need three hits before it dies
+        boss.damage(3);
+
+        //boss death is implemented by listening to onKilled event
+    },
+
+    bossKilled: function(boss){
+        console.log('boss killed'+ boss);
+
+        //play explosion
+        this.explode(boss.position.x, boss.position.y);
+
+        //update score
+        this.score+=20;
+        this.updateScore();
+
+        //set boss state to dead to continue enemy spawn
+        this.bossDead = true;
+
+    },
+
+    bounceBall: function(){
+        //ball physics
+        this.ball.body.drag.setTo(0,0);
+        //Math.atan2(velocity y, velocity x) to calculate angle
+        this.ball.rotation = Math.atan2(-100, -100);
+        //make this vary to increase game difficulty
+        this.ball.body.velocity.x = Math.cos(this.ball.rotation) * ((Math.random()*2)+1)* this.BALL_REPEL_VELOCITY;
+        this.ball.body.velocity.y = Math.sin(this.ball.rotation) * this.BALL_REPEL_VELOCITY;
+
     },
 
     
@@ -330,14 +447,14 @@ KickZero.Game.prototype = {
         //check kick accuracy
         this.checkAccuracy();
         //add drag to ball if no enemies
-        if(this.enemies.countDead()===this.NUMBER_OF_ENEMIES){
+        if(this.enemies.countDead()===this.NUMBER_OF_ENEMIES && this.bosses.countDead() ===1){
             this.ball.body.drag.setTo(300,0);
             //lower ball velocity
             this.ball.body.velocity.x = 300;
         }
         else{
             //adding more y velocity because ball sometimes end up in the air not hitting enemy and goes out of bounds
-            this.ball.body.velocity.y = 200;
+            this.ball.body.velocity.y = 300;
         }
     },
     
@@ -358,6 +475,15 @@ KickZero.Game.prototype = {
             this.updateScore();
         }
         //miss
+        else if (this.player.alive) {
+            //If miss, don't immediately jump to menu, show game over animation
+            this.explode(this.player.position.x + this.player.width /2.0, this.player.position.y + this.player.height / 2.0)
+            //kill player and ball
+            this.player.kill();
+            this.ball.kill();
+        }
+
+        // currently in game over state, tap to restart
         else{
             console.log('missed!');
             //add game over state
@@ -482,7 +608,8 @@ KickZero.Preload.prototype = {
         this.load.spritesheet('megaman','assets/sprites/megaman.png', 160, 160, 3);
         this.load.spritesheet('button', 'assets/images/button.png', 256, 80, 3);
         this.load.spritesheet('enemy', 'assets/sprites/enemy.png', 29.25, 36, 8);
-        this.load.spritesheet('explosion','assets/sprites/explosion.png', 64, 64, 25)
+        this.load.spritesheet('explosion','assets/sprites/explosion.png', 64, 64, 25);
+        this.load.spritesheet('boss', 'assets/sprites/boss.png', 136.95, 112, 20);
         //simulating page load
         for(var i=0;i<100;i++){
             this.load.image('full-background'+i, 'assets/backgrounds/full-background.png?rnd='+i);
