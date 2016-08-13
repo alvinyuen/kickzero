@@ -408,7 +408,7 @@ KickZero.Game.prototype = {
         }
         else{
             //adding more y velocity because ball sometimes end up in the air not hitting enemy and goes out of bounds
-            this.ball.body.velocity.y = 300;
+            this.ball.body.velocity.y = 200;
         }
     },
 
