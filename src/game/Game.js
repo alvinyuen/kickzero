@@ -26,11 +26,13 @@ KickZero.Game.prototype = {
         this.CROSSHAIR_SCALE = 2;
         this.ENEMY_SCALE = 1;
         this.BOSS_SCALE = 1;
-        
+
         //game settings
         this.GRAVITY = 500;  //pixels/second/second
         this.NUMBER_OF_ENEMIES = 3;
         this.BOSS_SPAWN_KILL = 5; // number of enemies killed before boss spawns
+
+
     },
 
     create: function(){
@@ -53,19 +55,19 @@ KickZero.Game.prototype = {
         this.physics.arcade.gravity.y = this.GRAVITY;
         //set scoreboard
         this.score = 0;
-        this.scoreText = this.add.text(this.game.world.centerX,50, 'Score: 0',{font:'bold 18px Arial', fill:'#123456'});
-        this.scoreText.anchor.setTo(0.5,0.5);
+        this.scoreBuffer = 0;
+        this.setupScoreboard();
 
         //set initial enemy kill counter && boss kill counter
         this.enemyCounter = 0;
         this.bossDead = true;
     },
 
-    
-    
+
+
     update: function(){
         //background tile movement
-        this.background.tilePosition.x -=50;
+        this.background.tilePosition.x -=20;
         //ball spin animation
         // animation was weird when ball velocity reached 0 so making it spin constantly
         // this.ball.angle += (this.ball.body.velocity.x / 5);
@@ -89,18 +91,23 @@ KickZero.Game.prototype = {
         }
 
         //mimic boss forward and backward movement
-        if(this.bosses.getFirstAlive()!=null|| this.bosses.getFirstAlive()!=undefined){
+        if(this.bosses.getFirstAlive()!=null|| this.bosses.getFirstAlive()!=undefined) {
             var boss = this.bosses.getFirstAlive();
-            if(boss.position.x < (this.world.width*(2/3))){
-                boss.body.velocity.x =  ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
+            if (boss.position.x < (this.world.width * (2 / 3))) {
+                boss.body.velocity.x = ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
             }
-            else if(boss.position.x > this.world.width - 50){
-                boss.body.velocity.x = - ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
+            else if (boss.position.x > this.world.width - 50) {
+                boss.body.velocity.x = -((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
             }
         }
 
 
 
+         //while there is score in scoreBuffer, update score
+        if(this.scoreBuffer>0){
+            this.incrementScore();
+            this.scoreBuffer--;
+        }
 
 
 
@@ -118,16 +125,16 @@ KickZero.Game.prototype = {
         this.gameTick++;
         //console.log('game tick is ' + this.gameTick);
     },
-    
-    
-    
+
+
+
     setupBackground: function(){
         this.background = this.game.add.tileSprite(0,0, 3712,1536, 'default-background');
         this.background.scale.setTo(this.BACKGROUND_SCALE, this.BACKGROUND_SCALE);
     },
-    
-    
-    
+
+
+
     setupGround: function(){
         //create ground to enable bounce effect for ball
         this.ground = this.add.group();
@@ -142,8 +149,8 @@ KickZero.Game.prototype = {
         }
     },
 
-    
-    
+
+
     setupPlayer: function() {
         this.player = this.add.sprite(this.PLAYER_XOFFSET, 0, 'megaman');
         this.player.scale.setTo(this.PLAYER_SCALE, this.PLAYER_SCALE);
@@ -156,8 +163,8 @@ KickZero.Game.prototype = {
         this.player.physicsBodyType = Phaser.Physics.ARCADE;
     },
 
-    
-    
+
+
     setupBall: function() {
         this.ball = this.add.sprite(this.BALL_INITIAL_XOFFSET, 0, 'ball');
         this.ball.scale.setTo(this.BALL_SCALE, this.BALL_SCALE);
@@ -172,8 +179,8 @@ KickZero.Game.prototype = {
         this.ball.body.bounce.set(0.5);
     },
 
-    
-    
+
+
     setupCrossHair: function() {
         this.crosshair = this.add.sprite(this.CROSSHAIR_XOFFSET, 0, 'crosshair');
         this.crosshair.scale.setTo(this.CROSSHAIR_SCALE, this.CROSSHAIR_SCALE);
@@ -185,8 +192,8 @@ KickZero.Game.prototype = {
         this.crosshair.physicsBodyType = Phaser.Physics.ARCADE;
     },
 
-    
-    
+
+
     setupEnemies: function() {
         // Setup sprite group for enemies
         this.enemies = this.add.group();
@@ -218,14 +225,22 @@ KickZero.Game.prototype = {
         boss.events.onKilled.add(this.bossKilled, this);
     },
 
-    
-    
+
+
     setupExplosion: function(){
         this.explosions = this.add.group();
     },
 
-    
-    
+
+
+    setupScoreboard: function(){
+        this.scoreText = this.add.text(this.game.world.centerX,50, 'Score: 0',{font:'bold 18px Arial', fill:'#123456'});
+        this.scoreText.anchor.setTo(0.5,0.5);
+        this.scoreTextTween = this.add.tween(this.scoreText.scale).to({x:1.5, y:1.5}, 200, Phaser.Easing.Linear.In).to({x:1,y:1}, 200, Phaser.Easing.Linear.In);
+    },
+
+
+
     spawnEnemies: function() {
         // I am not sure when enemy will be released. this might be a memory leak?
         // don't think you can track enemies alive with this. seems like this will keep adding new enemy objects into the pool
@@ -237,7 +252,7 @@ KickZero.Game.prototype = {
         if(enemy===null || enemy===undefined) return;
         // revive enemy
         enemy.revive();
-        
+
         enemy.scale.setTo(this.ENEMY_SCALE, this.ENEMY_SCALE);
         enemy.position.x = this.world.width;
         var enemyYOffset = this.world.height - enemy.height/2.0 - this.FLOOR_HEIGHT;
@@ -273,21 +288,21 @@ KickZero.Game.prototype = {
         //TODO need to add hp bar to boss
     },
 
-    
-    
+
+
     checkCollisions: function() {
         // sprites and ground collision
         this.physics.arcade.collide(this.player, this.ground);
         this.physics.arcade.collide(this.ball, this.ground);
         this.physics.arcade.collide(this.bosses, this.ground);
         this.physics.arcade.collide(this.enemies, this.ground);
-        
+
         // check if ball hit enemy
         this.physics.arcade.overlap(this.ball, this.enemies, this.ballHitEnemy, null, this);
 
         //check if ball hit boss
         this.physics.arcade.overlap(this.ball, this.bosses, this.ballHitBoss, null, this);
-        
+
         // check if ball hit player
         // not working since sprite dimensions not correct
         this.physics.arcade.overlap(this.ball, this.player, this.ballHitPlayer, null, this);
@@ -306,22 +321,22 @@ KickZero.Game.prototype = {
         this.physics.arcade.overlap(this.bosses, this.player, this.enemyHitPlayer, null, this);
     },
 
-    
-    
+
+
     ballHitPlayer: function(ball, player) {
         console.log('ball hit player');
     },
 
-    
-    
+
+
     enemyHitPlayer: function(enemy, player) {
         console.log('enemy hit player');
         this.state.remove('');
         this.state.start('Menu');
     },
-    
-    
-    
+
+
+
     ballHitEnemy: function(ball, enemy) {
         console.log('ball hit enemy');
 
@@ -333,9 +348,9 @@ KickZero.Game.prototype = {
         //kill enemy
         enemy.kill();
         //add score
-        this.score+=20;
-        //update score
-        this.updateScore();
+        this.scoreBuffer+=20;
+        //score animation
+        this.createScoreAnimation(enemy.position.x, enemy.position.y-100, '+20','');
 
 
     },
@@ -359,8 +374,8 @@ KickZero.Game.prototype = {
         this.explode(boss.position.x, boss.position.y);
 
         //update score
-        this.score+=20;
-        this.updateScore();
+        this.scoreBuffer+=50;
+        this.createScoreAnimation(boss.position.x, boss.position.y-100, '+50','');
 
         //set boss state to dead to continue enemy spawn
         this.bossDead = true;
@@ -378,7 +393,7 @@ KickZero.Game.prototype = {
 
     },
 
-    
+
 
     kick: function() {
         console.log('kick ball');
@@ -396,22 +411,24 @@ KickZero.Game.prototype = {
             this.ball.body.velocity.y = 300;
         }
     },
-    
-    
-    
+
+
+
     checkAccuracy: function(){
         var ballCrosshairDistance = Math.abs(this.ball.position.x - this.crosshair.position.x);
         //perfect hit
-        if(ballCrosshairDistance <= this.crosshair.width*0.25){
+        if(ballCrosshairDistance <= this.crosshair.width*0.20){
             console.log('perfect kick');
-            this.score+=10;
-            this.updateScore();
+            //update score buffer
+            this.scoreBuffer+=10;
+            //play score animation
+            this.createScoreAnimation(this.player.position.x + this.player.width/2.0, this.player.position.y -30, 'Perfect!', '+10');
         }
         //good hit
-        else if(ballCrosshairDistance > this.crosshair.width * 0.25 && ballCrosshairDistance < this.crosshair.width * 0.75){
+        else if(ballCrosshairDistance > this.crosshair.width * 0.20 && ballCrosshairDistance < this.crosshair.width * 0.75){
             console.log('good kick');
             this.score+=5;
-            this.updateScore();
+            this.createScoreAnimation(this.player.position.x + this.player.width/2.0, this.player.position.y -30, 'Good!', '+5');
         }
         //miss
         else if (this.player.alive) {
@@ -420,6 +437,7 @@ KickZero.Game.prototype = {
             //kill player and ball
             this.player.kill();
             this.ball.kill();
+            this.createScoreAnimation(this.player.position.x + this.player.width/2.0, this.player.position.y - 30, 'Miss!','');
         }
 
         // currently in game over state, tap to restart
@@ -429,15 +447,15 @@ KickZero.Game.prototype = {
             this.state.start('Menu');
         }
     },
-    
-    
-    
+
+
+
     updateScore: function(){
         this.scoreText.text = 'Score: '+this.score;
     },
 
-    
-    
+
+
     explode: function(positionX, positionY) {
         var explosion = this.explosions.getFirstDead();
         // create new explosion if none in pool
@@ -452,6 +470,31 @@ KickZero.Game.prototype = {
             explosion.x = positionX;
             explosion.y = positionY;
             explosion.animations.play('boom', 60, false);
+    },
+
+
+
+    //increment score through update function
+    incrementScore: function(){
+        this.score+=1;
+        this.scoreText.text = 'Score : '+ this.score;
+    },
+
+
+    //create score animation
+    createScoreAnimation: function(x, y, message, score){
+        var scoreFont = '30px Arial';
+        //create a new label animation for the score
+        var scoreAnimation = this.add.text(x,y, message+ ' '+score, {font: scoreFont, fill:"#39d179", stroke: "ffffff", strokeThickness: 15});
+        scoreAnimation.anchor.setTo(0.5,0);
+        scoreAnimation.align = 'center';
+
+        //tween score animation label to total score label
+        var scoreTween = this.add.tween(scoreAnimation).to({x:this.world.centerX, y:50}, 800, Phaser.Easing.Exponential.In, true);
+        scoreTween.onComplete.add(function(){
+            scoreAnimation.destroy();
+            this.scoreTextTween.start();
+        }, this);
     }
 
     
