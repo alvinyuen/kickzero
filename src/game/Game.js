@@ -31,6 +31,8 @@ KickZero.Game.prototype = {
         this.GRAVITY = 500;  //pixels/second/second
         this.NUMBER_OF_ENEMIES = 3;
         this.BOSS_SPAWN_KILL = 5; // number of enemies killed before boss spawns
+        this.BOSS_MAXHEALTH = 15;
+        this.BALL_DAMAGE = 3;
 
 
     },
@@ -281,13 +283,32 @@ KickZero.Game.prototype = {
         boss.position.x = this.world.width;
         var bossYOffset = this.world.height - boss.height/2.0 - this.FLOOR_HEIGHT;
         boss.position.y = bossYOffset;
-        boss.body.velocity.x = - ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);
-        boss.health = 15;
+        boss.body.velocity.x = - ((Math.random() * this.ENEMY_VELOCITY_MAX_VARIANCE) + this.ENEMY_VELOCITY_BASE);       
+        boss.health = this.BOSS_MAXHEALTH;
+        boss.maxHealth = this.BOSS_MAXHEALTH;
         boss.animations.add('walk');
         boss.play('walk',10, true);
-        //TODO need to add hp bar to boss
-    },
 
+        //setup boss healthbar
+        //##barConfig - customization
+         var barConfig = {
+            x: 0,
+            y: -75,
+            width: 150,
+            height: 10,
+            bg: {
+                color: '#000000'
+            },
+           bar: {
+                color: '#39d179'
+                }
+            };
+
+        if (boss.healthBar===null || boss.healthBar === undefined) {
+            boss.healthBar = new HealthBar(this.game, boss, barConfig);
+        }
+        boss.healthBar.setPercent(100);
+    },
 
 
     checkCollisions: function() {
@@ -362,9 +383,10 @@ KickZero.Game.prototype = {
         this.bounceBall();
 
         //boss will need three hits before it dies
-        boss.damage(3);
+        boss.damage(this.BALL_DAMAGE);
 
-        //boss death is implemented by listening to onKilled event
+        //boss death is implemented by listening to onKilled event in setupBoss method
+        boss.healthBar.setPercent(boss.health / boss.maxHealth * 100);
     },
 
     bossKilled: function(boss){
@@ -496,7 +518,5 @@ KickZero.Game.prototype = {
             this.scoreTextTween.start();
         }, this);
     }
-
-    
 
 };

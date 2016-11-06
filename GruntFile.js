@@ -28,7 +28,7 @@ module.exports = function (grunt) {
         open: {
             dev: {
                 path: 'http://localhost:8082/index.html',
-                app: 'chrome'
+                app: 'Google Chrome'
             }
         }
     });
